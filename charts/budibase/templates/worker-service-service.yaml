@@ -1,0 +1,15 @@
+---
+# yamllint disable rule:braces
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    com.budibase.service: worker-service
+  name: worker-service
+spec:
+  ports:
+    - name: {{ .Values.services.worker.port | quote }}
+      port: {{ .Values.services.worker.port }}
+      targetPort: {{ .Values.services.worker.port }}
+  selector:
+    com.budibase.service: worker-service

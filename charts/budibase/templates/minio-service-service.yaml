@@ -1,0 +1,16 @@
+---
+{{- if .Values.services.objectStore.minio }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    com.budibase.service: minio-service
+  name: minio-service
+spec:
+  ports:
+  - name: {{ .Values.services.objectStore.port | quote }}
+    port: {{ .Values.services.objectStore.port }}
+    targetPort: {{ .Values.services.objectStore.port }}
+  selector:
+    com.budibase.service: minio-service
+{{- end }}

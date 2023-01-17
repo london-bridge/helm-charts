@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: budibase-proxy
+  name: proxy-service
+spec:
+  replicas: {{ .Values.services.proxy.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: budibase-proxy
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+{{ if .Values.services.proxy.annotations }}
+{{- toYaml .Values.services.proxy.annotations | indent 8 -}}
+{{ end }}
+      labels:
+        app.kubernetes.io/name: budibase-proxy
+    spec:
+      containers:
+      - image: budibase/proxy:{{ .Values.globals.appVersion }}
+        imagePullPolicy: Always
+        name: proxy-service
+        ports:
+        - containerPort: {{ .Values.services.proxy.port }}
+        env:
+        - name: APPS_UPSTREAM_URL
+          value: {{ tpl .Values.services.proxy.upstreams.apps . | quote }}
+        - name: WORKER_UPSTREAM_URL
+          value: {{ tpl .Values.services.proxy.upstreams.worker . | quote }}
+        - name: MINIO_UPSTREAM_URL
+          value: {{ tpl .Values.services.proxy.upstreams.minio . | quote }}
+        - name: COUCHDB_UPSTREAM_URL
+          value: {{ .Values.services.couchdb.url | default (tpl .Values.services.proxy.upstreams.couchdb .) | quote }}
+        - name: RESOLVER
+          {{ if .Values.services.proxy.resolver }}
+          value: {{ .Values.services.proxy.resolver }}
+          {{ else }}
+          value: kube-dns.kube-system.svc.{{ .Values.services.dns }}
+          {{ end }}
+        {{ with .Values.services.proxy.resources }}
+        resources:
+        {{- toYaml . | nindent 10 }}
+        {{ end }}
+        volumeMounts:
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      {{ if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{ end }}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:

@@ -1,0 +1,16 @@
+---
+{{- if .Values.services.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    com.budibase.service: redis-service
+  name: redis-service
+spec:
+  ports:
+  - name: {{ .Values.services.redis.port | quote }}
+    port: {{ .Values.services.redis.port }}
+    targetPort: {{ .Values.services.redis.port }}
+  selector:
+    com.budibase.service: redis-service
+{{- end }}
