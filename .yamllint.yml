@@ -1,5 +1,7 @@
 ---
 extends: default
+ignore: |
+  **/templates/**/*
 rules:
   indentation:
     spaces: 2
