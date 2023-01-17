@@ -1,6 +1,7 @@
 ---
 extends: default
 ignore: |
+  docs/index.yaml
   **/templates/**/*
 rules:
   indentation:
