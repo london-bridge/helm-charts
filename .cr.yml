@@ -1,0 +1,7 @@
+---
+owner: london-bridge
+git-repo: helm-charts
+pages-branch: main
+release-name-template: '{{ .Name }}-chart-{{ .Version }}'
+skip-existing: true
+pages-index-path: ./docs/index.yaml

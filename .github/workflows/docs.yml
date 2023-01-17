@@ -1,0 +1,70 @@
+---
+name: Deploy Docs Page
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docs/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.10.0
+
+      - name: Run Chart Releaser
+        uses: helm/chart-releaser-action@v1
+        with:
+          config: ${{ github.workspace }}/.cr.yml
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v1
+
+  deploy:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
