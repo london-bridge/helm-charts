@@ -3,6 +3,6 @@ version: 2
 
 updates:
   - package-ecosystem: docker
-    directory: /charts/openvpn-as
+    directory: /charts/budibase
     schedule:
       interval: daily
